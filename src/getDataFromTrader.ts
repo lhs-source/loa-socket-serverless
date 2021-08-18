@@ -1,7 +1,7 @@
 import axios from 'axios';
 import cheerio, { CheerioAPI } from 'cheerio';
 import SocketList, { Socket } from "./SocketList";
-import { ACCTYPE, loopCount } from './Constants';
+import { ACCTYPE, loopCount, RequestAcc, AccData, ItemListByType } from './Constants';
 
 
 export async function getData(request: RequestAcc) : Promise<AccData[]> {
@@ -304,9 +304,8 @@ export async function getAllAcc(grade: number, socket: Socket[],) {
             // 3, 5 / 3, 4 등등 악세서리를 다 조회해온다.
             valueComposition.forEach((valcomp : number[]) => {
                 // 찾으려는 악세 각인 수치 넣기
-                socket1.number = valcomp[0];
-                socket2.number = valcomp[1];
-
+                socket1 = {...socket1, number: valcomp[0]};
+                socket2 = {...socket2, number: valcomp[1]};
                 // 
                 for(let accType of [ACCTYPE.NECK, ACCTYPE.EARRING, ACCTYPE.RING]){
                     // 목걸이, 귀걸이, 반지 각
@@ -333,6 +332,7 @@ export async function getAllAcc(grade: number, socket: Socket[],) {
                     .catch((err: any) => {
                         console.log('데이터를 가져오다가 ERROR!');
                     })
+                    // console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number})  거래소에서 가져올 거임! promise 받음`);
                     promiseAll.push(accPromise);
                 }                    
             })
@@ -340,7 +340,7 @@ export async function getAllAcc(grade: number, socket: Socket[],) {
     }
     return Promise.all(promiseAll)
     .then((res: any[]) => {
-        console.log('데이터를 드디어 모두 긁어왔다..')
+        console.log('데이터를 드디어 모두 긁어왔다..', res.length)
         let dictionary = {
             neckItemList: neckItemList,
             earringItemList: earringItemList,
@@ -468,54 +468,10 @@ async function getAccWidthProperty(
             totalList.push(...current);
             return totalList;
         }, []);
-        console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number})  거래소에서 가져옴!  ${output.length}`);
+        console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 거래소에서 가져옴!  ${output.length}`);
         return output;
     }).catch((err: any) => {
         return [];
     });
 }
 
-
-
-export interface RequestAcc {
-    acctype: number;
-    socket1: Socket;
-    socket2: Socket;
-    property1: number;
-    property2: number;
-}
-export interface AccData {
-    name: string;
-    count: string;
-    grade: number;
-    acctype: number;
-    socket1: {
-        name: string;
-        number: number;
-    }
-    socket2:{
-        name: string;
-        number: number;
-    }
-    badSocket1: {
-        name: string;
-        number: number;
-    }
-    property1: {
-        name: string;
-        number: number;
-    }
-    property2: {
-        name: string;
-        number: number;
-    }
-    price: number;
-    timestamp: Date;
-}
-export interface ItemListByType {
-    accType: ACCTYPE,
-    grade: number;
-    socket1: Socket;
-    socket2: Socket;
-    itemList: AccData[];
-}

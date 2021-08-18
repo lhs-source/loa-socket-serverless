@@ -3,7 +3,7 @@ import moment from 'moment';
 
 import {Socket} from './SocketList';
 
-import { AccData } from './getDataFromTrader';
+import { AccData } from './Constants';
 
 const dbCheckTime = -2;
 
