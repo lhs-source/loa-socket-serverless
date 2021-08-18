@@ -1,17 +1,10 @@
 import axios from 'axios';
 import cheerio, { CheerioAPI } from 'cheerio';
 import SocketList, { Socket } from "./SocketList";
+import { ACCTYPE, loopCount } from './Constants';
 
-enum ACCTYPE {
-    ALL = 0,
-    NECK = 200010,
-    EARRING = 200020,
-    RING = 200030,
-}
 
-const loopCount = 4; // 1, 2, 3
-
-export async function getData(request: RequestAcc) {
+export async function getData(request: RequestAcc) : Promise<AccData[]> {
     let param: any = {};
     let prop1: number | null = 0;
     let prop2: number | null = 0;
@@ -112,113 +105,37 @@ export async function getData(request: RequestAcc) {
     for(let i = 1; i < loopCount; ++i){
         param['request[pageNo]'] = i;
         let form = new URLSearchParams(param);
-        // console.log('여러 페이지 가져옵니다', i);
         promiseAll.push(
             axios.post(
-                // 'https://lhs-yeah.herokuapp.com/https://lostark.game.onstove.com/Auction/GetAuctionListV2',
                 'https://lostark.game.onstove.com/Auction/GetAuctionListV2',
                 form, 
-                {
-                    headers: {
-                        // 'Content-Type' : 'application/x-www-form-urlencoded'
-                        // 'Origin': 'https://lostark.game.onstove.com',
-                        // 'Referer': 'https://lostark.game.onstove.com/Auction'
-                        // "X-Requested-With": "XMLHttpRequest"
-                    }
-                }
+                // {
+                //     headers: {
+                //         // "X-Requested-With": "XMLHttpRequest"
+                //     }
+                // }
             ).then(res => {
-                // console.log('response from trader');
                 let data = res.data;
-                let cheer = cheerio.load(data);
-                let output: any[] = [];
-                
-                let empty = cheer('tbody').children('tr.empty');
-                if(empty && empty.length > 0) {
-                    // console.log('getData data is empty ', request);
-                    return output;
-                }
-                cheer('tbody tr').each((i, el) => {
-                    let name = ''
-                    try {
-                        name = (cheer(el).find('span.name')[0].children[0] as any).data;
-                    } catch (e ) {
-                        // console.log('error debug :: name', cheer(el).find('span.name')[0]);
-                    }
-                    let count = '';
-                    try{
-                        count = (cheer(el).find('span.count font')[0].children[0] as any).data.match(/\d/g).join('');
-                    }catch(e ) {
-                        // console.log('error debug :: count', cheer(el).find('span.count font')[0]);
-                    }
-                    let grade = Number(cheer(el).find('div.grade')[0].attribs['data-grade']);
-                    let socket = cheer(el).find('div.effect ul')[0];
-                    let socket1 = {
-                        name: (cheer(socket.children[1]).children('font')[0].children[0] as any).data,
-                        number: Number((cheer(socket.children[1]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
-                    };
-                    let socket2 = {
-                        name: (cheer(socket.children[3]).children('font')[0].children[0] as any).data,
-                        number: Number((cheer(socket.children[3]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
-                    };
-                    let badSocket1 = {
-                        name: (cheer(socket.children[5]).children('font')[0].children[0] as any).data,
-                        number: Number((cheer(socket.children[5]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
-                    };
-                    let prop = cheer(el).find('div.effect ul')[1];
-                    let property1 = {
-                        name: (cheer(prop.children[1]).children('font')[0].children[0] as any).data,
-                        number: Number((cheer(prop.children[1]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
-                    };
-                    let property2 = {name:'', number: 0};
-                    if(request.acctype === ACCTYPE.NECK) {
-                        property2 = {
-                            name: (cheer(prop.children[3]).children('font')[0].children[0] as any).data,
-                            number: Number((cheer(prop.children[3]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
-                        };
-                    }
-                    let price= 0;
-                    try{
-                        price = Number((cheer(el).find('div.price-buy em')[0].children[0] as any).data.match(/\d/g).join(''));
-                    } catch(e ) {
-                        // console.log('error debug :: price, 무시!', cheer(el).find('div.price-buy em')[0]);
-                        // price 가져오는 데 문제가 있다면 이 녀석은 무시한다.
-                        return;
-                    }
-                    let raw: AccData = {
-                        name: name,
-                        count: count,
-                        grade: grade,
-                        acctype: request.acctype,
-                        socket1: socket1,
-                        socket2: socket2,
-                        badSocket1: badSocket1,
-                        property1: property1,
-                        property2: property2,
-                        price: price,
-                        timestamp: new Date(),
-                    }
-                    // console.log(raw);
-                    output.push(raw);
-                })
-            
+                let output = parseAcc(data, request.acctype);
                 return output;
             }).catch((error: any) => {
-                // console.log("DEBUG :: 거래소에서 데이터 가져오는 데 문제가 생겼다, 아니면 결과가 없음!", request, param);
-                // console.log("DEBUG :: 거래소에서 데이터 가져오는 데 문제가 생겼다, 아니면 결과가 없음!", i);
                 return [];
             })
         );
     }
 
-    return Promise.all(promiseAll).then((res: any[]) => {
+    return Promise.all(promiseAll)
+    .then((res: any[]) => {
         return res.reduce((totalList: any[], current: any[]) => {
             totalList.push(...current);
             return totalList;
         }, []);
+    }).catch((err: any) => {
+        return [];
     });
 }
 
-export async function getDataLegend(request: RequestAcc) {
+export async function getDataLegend(request: RequestAcc) : Promise<AccData[]>  {
     let param: any = {};
     let prop1: number | null = 0;
     let prop2: number | null = 0;
@@ -320,95 +237,17 @@ export async function getDataLegend(request: RequestAcc) {
     for(let i = 1; i < loopCount; ++i){
         param['request[pageNo]'] = i;
         let form = new URLSearchParams(param);
-        // console.log('여러 페이지 가져옵니다', i);
         promiseAll.push(
             axios.post(
-                // 'https://lhs-yeah.herokuapp.com/https://lostark.game.onstove.com/Auction/GetAuctionListV2',
                 'https://lostark.game.onstove.com/Auction/GetAuctionListV2',
                 form, 
-                {
-                    headers: {
-                        // 'Content-Type' : 'application/x-www-form-urlencoded'
-                        // 'Origin': 'https://lostark.game.onstove.com',
-                        // 'Referer': 'https://lostark.game.onstove.com/Auction'
-                        // "X-Requested-With": "XMLHttpRequest"
-                    }
-                }
+                // {
+                //     headers: {
+                //     }
+                // }
             ).then(res => {
-                // console.log('response from trader');
                 let data = res.data;
-                let cheer = cheerio.load(data);
-                let output: any[] = [];
-                
-                let empty = cheer('tbody').children('tr.empty');
-                if(empty && empty.length > 0) {
-                    // console.log('getData data is empty ', request);
-                    return output;
-                }
-                cheer('tbody tr').each((i, el) => {
-                    let name = ''
-                    try {
-                        name = (cheer(el).find('span.name')[0].children[0] as any).data;
-                    } catch (e ) {
-                        // console.log('error debug :: name', cheer(el).find('span.name')[0]);
-                    }
-                    let count = '';
-                    try{
-                        count = (cheer(el).find('span.count font')[0].children[0] as any).data.match(/\d/g).join('');
-                    }catch(e ) {
-                        // console.log('error debug :: count', cheer(el).find('span.count font')[0]);
-                    }
-                    let grade = Number(cheer(el).find('div.grade')[0].attribs['data-grade']);
-                    let socket = cheer(el).find('div.effect ul')[0];
-                    let socket1 = {
-                        name: (cheer(socket.children[1]).children('font')[0].children[0] as any).data,
-                        number: Number((cheer(socket.children[1]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
-                    };
-                    let socket2 = {
-                        name: (cheer(socket.children[3]).children('font')[0].children[0] as any).data,
-                        number: Number((cheer(socket.children[3]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
-                    };
-                    let badSocket1 = {
-                        name: (cheer(socket.children[5]).children('font')[0].children[0] as any).data,
-                        number: Number((cheer(socket.children[5]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
-                    };
-                    let prop = cheer(el).find('div.effect ul')[1];
-                    let property1 = {
-                        name: (cheer(prop.children[1]).children('font')[0].children[0] as any).data,
-                        number: Number((cheer(prop.children[1]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
-                    };
-                    let property2 = {name:'', number: 0};
-                    if(request.acctype === ACCTYPE.NECK) {
-                        property2 = {
-                            name: (cheer(prop.children[3]).children('font')[0].children[0] as any).data,
-                            number: Number((cheer(prop.children[3]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
-                        };
-                    }
-                    let price= 0;
-                    try{
-                        price = Number((cheer(el).find('div.price-buy em')[0].children[0] as any).data.match(/\d/g).join(''));
-                    } catch(e ) {
-                        // console.log('error debug :: price, 무시!', cheer(el).find('div.price-buy em')[0]);
-                        // price 가져오는 데 문제가 있다면 이 녀석은 무시한다.
-                        return;
-                    }
-                    let raw: AccData = {
-                        name: name,
-                        count: count,
-                        grade: grade,
-                        acctype: request.acctype,
-                        socket1: socket1,
-                        socket2: socket2,
-                        badSocket1: badSocket1,
-                        property1: property1,
-                        property2: property2,
-                        price: price,
-                        timestamp: new Date(),
-                    }
-                    // console.log(raw);
-                    output.push(raw);
-                })
-            
+                let output = parseAcc(data, request.acctype);
                 return output;
             }).catch((error: any) => {
                 // console.log("DEBUG :: 거래소에서 데이터 가져오는 데 문제가 생겼다, 아니면 결과가 없음!", request, param);
@@ -418,90 +257,222 @@ export async function getDataLegend(request: RequestAcc) {
         );
     }
 
-    return Promise.all(promiseAll).then((res: any[]) => {
+    return Promise.all(promiseAll)
+    .then((res: any[]) => {
         return res.reduce((totalList: any[], current: any[]) => {
             totalList.push(...current);
             return totalList;
         }, []);
-    });
+    })
+    .catch((err: any) => {
+        return [];
+    })
 }
 
-export async function getAllAcc() {
+export async function getAllAcc(grade: number, socket: Socket[],) {
     // 각인 조합별로 가져오기
-    // let promiseArray: any[] = [];
-    // let socketLength = requestBody.socket.length;
-    // for(let i = 0; i < socketLength; ++i) {
-    //     for(let j = i + 1; j < socketLength; ++j){
-    //         let socket1 = requestBody.socket[i];
-    //         let socket2 = requestBody.socket[j];
-    //         // 악세 각인 숫자 경우의 수
-    //         let valueComposition = requestBody.grade === 4 ? 
-    //         [
-    //             [1, 3],
-    //             [2, 2],
-    //             [2, 3],
-    //             [3, 1],
-    //             [3, 2],
-    //             [3, 3],
-    //         ] 
-    //         :
-    //         [
-    //             [3, 4],
-    //             [3, 5],
-    //             [4, 3],
-    //             [5, 3],
-    //         ]
-    //         // 3, 5 / 3, 4 등등 악세서리를 다 조회해온다.
-    //         valueComposition.forEach((valcomp : number[]) => {
-    //             for(let accType of [ACCTYPE.NECK, ACCTYPE.EARRING, ACCTYPE.RING]){
-    //                 // console.log('acctype 은 어떻게 찍히나?', accType);
-    //                 // 치 특 신 3번
-    //                 for(let k = 0; k < 3; ++k) {
-    //                     let searchPromise : any = {};
-    //                     let param : RequestAcc = {
-    //                         acctype: Number(accType),
-    //                         socket1: {
-    //                             id: socket1.id,
-    //                             name: socket1.name,
-    //                             number: valcomp[0],
-    //                         },
-    //                         socket2: {
-    //                             id: socket2.id,
-    //                             name: socket2.name,
-    //                             number: valcomp[1],
-    //                         },
-    //                         property1: k,
-    //                         property2: -1,
-    //                     }
-    //                     if(requestBody.grade === 4) {
-    //                         searchPromise = getDataLegend(param).then((res : any) => {
-    //                             // console.log(`전설 ${socket1.name}(${valcomp[0]}) - ${socket2.name}(${valcomp[1]}) 치특신: ${k} 거래소에서 가져옴! ${res.length}`);
-    //                             // console.log(res);
-    //                             return res;
-    //                         });
-    //                     } else if(requestBody.grade === 5) {
-    //                         searchPromise = getData(param).then((res : any) => {
-    //                             // console.log(`유물 ${socket1.name}(${valcomp[0]}) - ${socket2.name}(${valcomp[1]}) 치특신: ${k} 거래소에서 가져옴!  ${res.length}`);
-    //                             // console.log(res);
-    //                             return res;
-    //                         });
-    //                     }
-    //                     promiseArray.push(searchPromise);
-    //                     return 0;
-    //                 }
-    //             }                    
-    //         })
-    //     }
-    // }
-    // console.log('기다린다.. promise 모든 게 끝나길');
-    // return Promise.all(promiseArray)
-    // .then((res: any) => {
-    //     console.log('데이터를 긁어오고 응답을 보냅니다!')
-    //     return res;
-    // }).catch((res: any) => {
-    //     console.log('데이터를 긁어오다가 잘못되었고, 응답을 보냅니다!')
-    //     return res;
-    // })
+    let socketLength = socket.length;
+
+    let neckItemList: ItemListByType[] = [];
+    let earringItemList: ItemListByType[] = [];
+    let ringItemList: ItemListByType[] = [];
+
+    let promiseAll: any[] = [];
+
+    for(let i = 0; i < socketLength; ++i) {
+        for(let j = i + 1; j < socketLength; ++j){
+            let socket1 = socket[i];
+            let socket2 = socket[j];
+            // 악세 각인 숫자 경우의 수
+            let valueComposition: any[] = grade === 4 ? 
+            [
+                [1, 3],
+                [2, 2],
+                [2, 3],
+                [3, 1],
+                [3, 2],
+                [3, 3],
+            ] 
+            :
+            [
+                [3, 4],
+                [3, 5],
+                [4, 3],
+                [5, 3],
+            ]
+
+            // 3, 5 / 3, 4 등등 악세서리를 다 조회해온다.
+            valueComposition.forEach((valcomp : number[]) => {
+                // 찾으려는 악세 각인 수치 넣기
+                socket1.number = valcomp[0];
+                socket2.number = valcomp[1];
+
+                // 
+                for(let accType of [ACCTYPE.NECK, ACCTYPE.EARRING, ACCTYPE.RING]){
+                    // 목걸이, 귀걸이, 반지 각
+                    // 치 특 신 3번
+                    let accPromise = getAccWidthProperty(grade, accType, socket1, socket2)
+                    .then((res: AccData[]) => {
+                        // 데이터가 빈 것이거나 정상적으로 왔다.
+                        let accOne: ItemListByType = {
+                            accType: accType,
+                            grade: grade,
+                            socket1: socket1,
+                            socket2: socket2,
+                            itemList: res,
+                        }
+                        // 아이템 사전에 넣는다.
+                        if(accType === ACCTYPE.NECK){
+                            neckItemList.push(accOne);
+                        } else if(accType === ACCTYPE.EARRING) {
+                            earringItemList.push(accOne);
+                        } else if(accType === ACCTYPE.RING) {
+                            ringItemList.push(accOne);
+                        }
+                    })
+                    .catch((err: any) => {
+                        console.log('데이터를 가져오다가 ERROR!');
+                    })
+                    promiseAll.push(accPromise);
+                }                    
+            })
+        }
+    }
+    return Promise.all(promiseAll)
+    .then((res: any[]) => {
+        console.log('데이터를 드디어 모두 긁어왔다..')
+        let dictionary = {
+            neckItemList: neckItemList,
+            earringItemList: earringItemList,
+            ringItemList: ringItemList,
+        }
+        // console.log('아이템 사전', dictionary);
+        return dictionary;
+    }).catch((res: any) => {
+        console.log('데이터를 긁어오다가 잘못되었고, 응답을 보냅니다!')
+        return res;
+    })
+}
+
+function parseAcc(responseData: any, accType: ACCTYPE) {
+    let cheer = cheerio.load(responseData);
+    let output: any[] = [];
+    
+    let empty = cheer('tbody').children('tr.empty');
+    if(empty && empty.length > 0) {
+        // console.log('getData data is empty ', request);
+        return output;
+    }
+    cheer('tbody tr').each((i, el) => {
+        let name = ''
+        try {
+            name = (cheer(el).find('span.name')[0].children[0] as any).data;
+        } catch (e ) {
+            // console.log('error debug :: name', cheer(el).find('span.name')[0]);
+        }
+        let count = '';
+        try{
+            count = (cheer(el).find('span.count font')[0].children[0] as any).data.match(/\d/g).join('');
+        }catch(e ) {
+            // console.log('error debug :: count', cheer(el).find('span.count font')[0]);
+        }
+        let grade = Number(cheer(el).find('div.grade')[0].attribs['data-grade']);
+        let socket = cheer(el).find('div.effect ul')[0];
+        let socket1 = {
+            name: (cheer(socket.children[1]).children('font')[0].children[0] as any).data,
+            number: Number((cheer(socket.children[1]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
+        };
+        let socket2 = {
+            name: (cheer(socket.children[3]).children('font')[0].children[0] as any).data,
+            number: Number((cheer(socket.children[3]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
+        };
+        let badSocket1 = {
+            name: (cheer(socket.children[5]).children('font')[0].children[0] as any).data,
+            number: Number((cheer(socket.children[5]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
+        };
+        let prop = cheer(el).find('div.effect ul')[1];
+        let property1 = {
+            name: (cheer(prop.children[1]).children('font')[0].children[0] as any).data,
+            number: Number((cheer(prop.children[1]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
+        };
+        let property2 = {name:'', number: 0};
+        if(accType === ACCTYPE.NECK) {
+            property2 = {
+                name: (cheer(prop.children[3]).children('font')[0].children[0] as any).data,
+                number: Number((cheer(prop.children[3]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
+            };
+        }
+        let price= 0;
+        try{
+            price = Number((cheer(el).find('div.price-buy em')[0].children[0] as any).data.match(/\d/g).join(''));
+        } catch(e ) {
+            // console.log('error debug :: price, 무시!', cheer(el).find('div.price-buy em')[0]);
+            // price 가져오는 데 문제가 있다면 이 녀석은 무시한다.
+            return;
+        }
+        let raw: AccData = {
+            name: name,
+            count: count,
+            grade: grade,
+            acctype: accType,
+            socket1: socket1,
+            socket2: socket2,
+            badSocket1: badSocket1,
+            property1: property1,
+            property2: property2,
+            price: price,
+            timestamp: new Date(),
+        }
+        // console.log(raw);
+        output.push(raw);
+    })
+    return output;
+}
+
+async function getAccWidthProperty(
+    grade: Number,
+    accType: ACCTYPE, 
+    socket1: Socket, 
+    socket2: Socket,
+    ) : Promise<AccData[]> {
+    // ? 0 - 치명, 1 - 특화, 2 - 신속
+    let promiseAll: any[] = [];
+    for(let k = 0; k < 3; ++k) {
+        let searchPromise : any = {};
+        let param : RequestAcc = {
+            acctype: Number(accType),
+            socket1: socket1,
+            socket2: socket2,
+            property1: k,
+            property2: -1,
+        }
+        // console.log('파라미터', JSON.stringify(param));
+        if(grade === 4) {
+            // 전설 데이터 가져오기
+            searchPromise = getDataLegend(param).then((res : any) => {
+                return res;
+            });
+        } else if(grade === 5) {
+            // 유물 데이터 가져오기
+            searchPromise = getData(param).then((res : any) => {
+                return res;
+            });
+        }
+        promiseAll.push(searchPromise);
+    }
+    return Promise.all(promiseAll).then((res: any[]) => {
+        // 치특신 데이터를 모두 가져왔다.
+        // 3개 배열을 하나로 합쳐서 응답하자.
+        // [ [...치], [...특], [...신] ]
+        let output = res.reduce((totalList: any[], current: any[]) => {
+            totalList.push(...current);
+            return totalList;
+        }, []);
+        console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number})  거래소에서 가져옴!  ${output.length}`);
+        return output;
+    }).catch((err: any) => {
+        return [];
+    });
 }
 
 
@@ -540,4 +511,11 @@ export interface AccData {
     }
     price: number;
     timestamp: Date;
+}
+export interface ItemListByType {
+    accType: ACCTYPE,
+    grade: number;
+    socket1: Socket;
+    socket2: Socket;
+    itemList: AccData[];
 }

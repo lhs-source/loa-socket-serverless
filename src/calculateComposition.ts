@@ -125,3 +125,23 @@ export function getDespComposition(desposition: any[], socketSum: number, grade:
   recursive(accCount * 2, 0, []);
   return ableComp;
 }
+
+
+/**
+ * 
+ * @param list 2차원 배열 ex) [ [ 4, 4 ], [ 4, 4 ], [ 3, 3 ], [ 5, 5, 5 ], [ 3 ] ]
+ * @returns 3의 개수
+ */
+function countThree(list: any[]) : number {
+  let sumOfThree = list.reduce((sum : number, current : number[]) => {
+    let subSumOfThree = current.reduce((three : number, num: number) => {
+      if(num === 3) {
+        ++three;
+      }
+      return three;
+    }, 0);
+    sum += subSumOfThree;
+    return sum;
+  }, 0);
+  return sumOfThree;
+}
