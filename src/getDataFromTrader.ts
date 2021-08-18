@@ -426,7 +426,83 @@ export async function getDataLegend(request: RequestAcc) {
     });
 }
 
-
+export async function getAllAcc() {
+    // 각인 조합별로 가져오기
+    // let promiseArray: any[] = [];
+    // let socketLength = requestBody.socket.length;
+    // for(let i = 0; i < socketLength; ++i) {
+    //     for(let j = i + 1; j < socketLength; ++j){
+    //         let socket1 = requestBody.socket[i];
+    //         let socket2 = requestBody.socket[j];
+    //         // 악세 각인 숫자 경우의 수
+    //         let valueComposition = requestBody.grade === 4 ? 
+    //         [
+    //             [1, 3],
+    //             [2, 2],
+    //             [2, 3],
+    //             [3, 1],
+    //             [3, 2],
+    //             [3, 3],
+    //         ] 
+    //         :
+    //         [
+    //             [3, 4],
+    //             [3, 5],
+    //             [4, 3],
+    //             [5, 3],
+    //         ]
+    //         // 3, 5 / 3, 4 등등 악세서리를 다 조회해온다.
+    //         valueComposition.forEach((valcomp : number[]) => {
+    //             for(let accType of [ACCTYPE.NECK, ACCTYPE.EARRING, ACCTYPE.RING]){
+    //                 // console.log('acctype 은 어떻게 찍히나?', accType);
+    //                 // 치 특 신 3번
+    //                 for(let k = 0; k < 3; ++k) {
+    //                     let searchPromise : any = {};
+    //                     let param : RequestAcc = {
+    //                         acctype: Number(accType),
+    //                         socket1: {
+    //                             id: socket1.id,
+    //                             name: socket1.name,
+    //                             number: valcomp[0],
+    //                         },
+    //                         socket2: {
+    //                             id: socket2.id,
+    //                             name: socket2.name,
+    //                             number: valcomp[1],
+    //                         },
+    //                         property1: k,
+    //                         property2: -1,
+    //                     }
+    //                     if(requestBody.grade === 4) {
+    //                         searchPromise = getDataLegend(param).then((res : any) => {
+    //                             // console.log(`전설 ${socket1.name}(${valcomp[0]}) - ${socket2.name}(${valcomp[1]}) 치특신: ${k} 거래소에서 가져옴! ${res.length}`);
+    //                             // console.log(res);
+    //                             return res;
+    //                         });
+    //                     } else if(requestBody.grade === 5) {
+    //                         searchPromise = getData(param).then((res : any) => {
+    //                             // console.log(`유물 ${socket1.name}(${valcomp[0]}) - ${socket2.name}(${valcomp[1]}) 치특신: ${k} 거래소에서 가져옴!  ${res.length}`);
+    //                             // console.log(res);
+    //                             return res;
+    //                         });
+    //                     }
+    //                     promiseArray.push(searchPromise);
+    //                     return 0;
+    //                 }
+    //             }                    
+    //         })
+    //     }
+    // }
+    // console.log('기다린다.. promise 모든 게 끝나길');
+    // return Promise.all(promiseArray)
+    // .then((res: any) => {
+    //     console.log('데이터를 긁어오고 응답을 보냅니다!')
+    //     return res;
+    // }).catch((res: any) => {
+    //     console.log('데이터를 긁어오다가 잘못되었고, 응답을 보냅니다!')
+    //     return res;
+    // })
+}
 
 
 
