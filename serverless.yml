@@ -1,0 +1,19 @@
+service: loaSocketServerless
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: ap-northeast-2
+  apiName: loaSocketServerless
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+
+functions:
+  LOA_postSocket:
+    handler: src/index.handler
+    events:
+      - http:
+          path: /yrdy
+          method: post
