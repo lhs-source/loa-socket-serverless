@@ -70,11 +70,16 @@ export function getAllCases(itemDictionary: ItemDictionary, socketList: any[], l
                 let items = [...targetList, val];
                 // console.log('last', index, '=>', items.join(' - '));
                 let itemList = findSocket(socketList, items);
+                let accList = getAcc2(itemDictionary, itemList, grade);
+                console.log('accList', JSON.stringify(itemList),
+                accList.map((accOne : any[]) => {
+                    return accOne.length;
+                }).join(', '));
                 finalOutput.push({
                     accSocketList: itemList,
                     // accStr: items.map((item, index) => this.getAcc(index, item)),
-                    accList: getAcc2(itemDictionary, itemList, grade),//items.map((item, index) => this.getAcc(index, item)),
-                    accCompositions: [], // this.getFinalComposition(items), TODO 다른 함수에서 한번에 ㄱㄱ
+                    accList: accList,//items.map((item, index) => this.getAcc(index, item)),
+                    //accCompositions: [], // this.getFinalComposition(items), TODO 다른 함수에서 한번에 ㄱㄱ
                 });
                 return;
             }
@@ -142,6 +147,7 @@ function getAcc2(itemDictionary: ItemDictionary, sockets: any[], grade: number) 
         // console.log('getAcc2 loop', sock);
         let item: any = [];
         let itemType: ItemListByType | undefined = undefined;
+        // console.log('getAcc2', sockets, grade);
         if (sockIndex === 0) {
             itemType = itemDictionary.neckItemList.find((item: ItemListByType) => {
                 if (item.grade === grade &&
@@ -154,12 +160,12 @@ function getAcc2(itemDictionary: ItemDictionary, sockets: any[], grade: number) 
             })
 
             if (itemType === undefined) {
-                console.log('DEBUG :: cannot find item from ItemDictionay', sock);
+                // console.log('DEBUG :: cannot find item from ItemDictionay', sock);
                 return;
             }
             else {
-                console.log('itemType.length = ', item.length);
                 item = itemType.itemList;
+                // console.log('itemType.length = ', item.length);
             }
         } else if (sockIndex === 1 || sockIndex === 2) {
             itemType = itemDictionary.earringItemList.find((item: ItemListByType) => {
@@ -173,12 +179,12 @@ function getAcc2(itemDictionary: ItemDictionary, sockets: any[], grade: number) 
             })
 
             if (itemType === undefined) {
-                console.log('DEBUG :: cannot find item from ItemDictionay', sock);
+                // console.log('DEBUG :: cannot find item from ItemDictionay', sock);
                 return;
             }
             else {
-                console.log('itemType.length = ', item.length);
                 item = itemType.itemList;
+                // console.log('itemType.length = ', item.length);
             }
         } else if (sockIndex === 3 || sockIndex === 4) {
             itemType = itemDictionary.ringItemList.find((item: ItemListByType) => {
@@ -192,12 +198,12 @@ function getAcc2(itemDictionary: ItemDictionary, sockets: any[], grade: number) 
             })
 
             if (itemType === undefined) {
-                console.log('DEBUG :: cannot find item from ItemDictionay', sock);
+                // console.log('DEBUG :: cannot find item from ItemDictionay', sock);
                 return;
             }
             else {
-                console.log('itemType.length = ', item.length);
                 item = itemType.itemList;
+                // console.log('itemType.length = ', item.length);
             }
         }
 
@@ -231,7 +237,7 @@ export function getFinalComposition(maxPrice: number, props: any, penalty: any, 
 
     // console.log(allItemList);
     let allOfFinal: any[] = [];
-    let propSum = Number(props['[치명]']) + Number(props['[특화]']) + Number(props['[신속]']);
+    let propSum = Number(props['치명']) + Number(props['특화']) + Number(props['신속']);
     let recursive = (sourceList: any[], depth: number, makeList: AccData[], sumData: SumDataModel) => {
         let listUp: any = sourceList[depth];
         // console.log(sourceList, depth, listUp.list);
@@ -313,16 +319,16 @@ export function getFinalComposition(maxPrice: number, props: any, penalty: any, 
                 perSumData.property[item.property2.name] = item.property2.number;
             }
 
-            if (perSumData.property['[신속]']
-                && perSumData.property['[신속]'] > Number(props['[신속]']) + 100) {
+            if (perSumData.property['신속']
+                && perSumData.property['신속'] > Number(props['신속']) + 100) {
                 return;
             }
-            if (perSumData.property['[치명]']
-                && perSumData.property['[치명]'] > Number(props['[치명]']) + 100) {
+            if (perSumData.property['치명']
+                && perSumData.property['치명'] > Number(props['치명']) + 100) {
                 return;
             }
-            if (perSumData.property['[특화]']
-                && perSumData.property['[특화]'] > Number(props['[특화]']) + 100) {
+            if (perSumData.property['특화']
+                && perSumData.property['특화'] > Number(props['특화']) + 100) {
                 return;
             }
 
@@ -344,30 +350,30 @@ export function getFinalComposition(maxPrice: number, props: any, penalty: any, 
                     // 가격이 넘으면 안되고
                     return;
                 }
-                let itemPropSum = perSumData.property['[신속]'] ? perSumData.property['[신속]'] : 0
-                    + perSumData.property['[특화]'] ? perSumData.property['[특화]'] : 0
-                        + perSumData.property['[치명]'] ? perSumData.property['[치명]'] : 0;
+                let itemPropSum = perSumData.property['신속'] ? perSumData.property['신속'] : 0
+                    + perSumData.property['특화'] ? perSumData.property['특화'] : 0
+                        + perSumData.property['치명'] ? perSumData.property['치명'] : 0;
                 if (propSum > itemPropSum) {
                     // 특성 합이 부족하면 탈락
                     // return;
                 }
 
                 // 개별 특성 합이 너무 부족해도 탈락 
-                if (perSumData.property['[신속]']
-                    && perSumData.property['[신속]'] < Number(props['[신속]'])) {
+                if (perSumData.property['신속']
+                    && perSumData.property['신속'] < Number(props['신속'])) {
                     return;
                 }
-                if (perSumData.property['[치명]']
-                    && perSumData.property['[치명]'] < Number(props['[치명]'])) {
+                if (perSumData.property['치명']
+                    && perSumData.property['치명'] < Number(props['치명'])) {
                     return;
                 }
-                if (perSumData.property['[특화]']
-                    && perSumData.property['[특화]'] < Number(props['[특화]'])) {
+                if (perSumData.property['특화']
+                    && perSumData.property['특화'] < Number(props['특화'])) {
                     return;
                 }
-                perSumData.propertySum = ((perSumData.property['[특화]'] ? perSumData.property['[특화]'] : 0)
-                    + (perSumData.property['[신속]'] ? perSumData.property['[신속]'] : 0)
-                    + (perSumData.property['[치명]'] ? perSumData.property['[치명]'] : 0));
+                perSumData.propertySum = ((perSumData.property['특화'] ? perSumData.property['특화'] : 0)
+                    + (perSumData.property['신속'] ? perSumData.property['신속'] : 0)
+                    + (perSumData.property['치명'] ? perSumData.property['치명'] : 0));
 
                 allOfFinal.push([newMakeList, perSumData]);
                 if (allOfFinal.length > dataLimit + 2) {

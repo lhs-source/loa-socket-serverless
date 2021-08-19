@@ -1,5 +1,6 @@
 import axios from 'axios';
 import cheerio, { CheerioAPI } from 'cheerio';
+import moment from 'moment';
 import SocketList, { Socket } from "./SocketList";
 import { ACCTYPE, loopCount, RequestAcc, AccData, ItemListByType } from './Constants';
 
@@ -269,6 +270,20 @@ export async function getDataLegend(request: RequestAcc) : Promise<AccData[]>  {
     })
 }
 
+async function requestToLambda(grade : number, socketList : Socket[]) {
+    let param = {
+        grade: grade,
+        socketList: socketList,
+    }
+    let res = await axios.post('https://rcn8wut8le.execute-api.ap-northeast-2.amazonaws.com/dev/cdft', param);
+    if(res.status !== 200) {
+        console.log('람다에서 데이터를 가져오지 못했습니다.', JSON.stringify(param));
+        return res;
+    }
+    console.log('람다에서 데이터를 가져왔습니다.', res.data);
+    return res.data;
+}
+
 export async function getAllAcc(grade: number, socket: Socket[],) {
     // 각인 조합별로 가져오기
     let socketLength = socket.length;
@@ -281,66 +296,22 @@ export async function getAllAcc(grade: number, socket: Socket[],) {
 
     for(let i = 0; i < socketLength; ++i) {
         for(let j = i + 1; j < socketLength; ++j){
-            let socket1 = socket[i];
-            let socket2 = socket[j];
-            // 악세 각인 숫자 경우의 수
-            let valueComposition: any[] = grade === 4 ? 
-            [
-                [1, 3],
-                [2, 2],
-                [2, 3],
-                [3, 1],
-                [3, 2],
-                [3, 3],
-            ] 
-            :
-            [
-                [3, 4],
-                [3, 5],
-                [4, 3],
-                [5, 3],
+            // 크롤러 람다에서 가져온다.
+            let socketList = [
+                socket[i],
+                socket[j],
             ]
-
-            // 3, 5 / 3, 4 등등 악세서리를 다 조회해온다.
-            valueComposition.forEach((valcomp : number[]) => {
-                // 찾으려는 악세 각인 수치 넣기
-                socket1 = {...socket1, number: valcomp[0]};
-                socket2 = {...socket2, number: valcomp[1]};
-                // 
-                for(let accType of [ACCTYPE.NECK, ACCTYPE.EARRING, ACCTYPE.RING]){
-                    // 목걸이, 귀걸이, 반지 각
-                    // 치 특 신 3번
-                    let accPromise = getAccWidthProperty(grade, accType, socket1, socket2)
-                    .then((res: AccData[]) => {
-                        // 데이터가 빈 것이거나 정상적으로 왔다.
-                        let accOne: ItemListByType = {
-                            accType: accType,
-                            grade: grade,
-                            socket1: socket1,
-                            socket2: socket2,
-                            itemList: res,
-                        }
-                        // 아이템 사전에 넣는다.
-                        if(accType === ACCTYPE.NECK){
-                            neckItemList.push(accOne);
-                        } else if(accType === ACCTYPE.EARRING) {
-                            earringItemList.push(accOne);
-                        } else if(accType === ACCTYPE.RING) {
-                            ringItemList.push(accOne);
-                        }
-                    })
-                    .catch((err: any) => {
-                        console.log('데이터를 가져오다가 ERROR!');
-                    })
-                    // console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number})  거래소에서 가져올 거임! promise 받음`);
-                    promiseAll.push(accPromise);
-                }                    
-            })
+            promiseAll.push(requestToLambda(grade, socketList)
+            .then((res: any) => { 
+                neckItemList.push(...res.neckItemList);
+                earringItemList.push(...res.earringItemList);
+                ringItemList.push(...res.ringItemList);
+            }));
         }
     }
     return Promise.all(promiseAll)
     .then((res: any[]) => {
-        console.log('데이터를 드디어 모두 긁어왔다..', res.length)
+        console.log('람다에서 데이터를 드디어 모두 긁어왔다..', res.length)
         let dictionary = {
             neckItemList: neckItemList,
             earringItemList: earringItemList,
@@ -349,7 +320,7 @@ export async function getAllAcc(grade: number, socket: Socket[],) {
         // console.log('아이템 사전', dictionary);
         return dictionary;
     }).catch((res: any) => {
-        console.log('데이터를 긁어오다가 잘못되었고, 응답을 보냅니다!')
+        console.log('람다에서 데이터를 긁어오다가 잘못되었고, 응답을 보냅니다!')
         return res;
     })
 }
@@ -360,8 +331,13 @@ function parseAcc(responseData: any, accType: ACCTYPE) {
     
     let empty = cheer('tbody').children('tr.empty');
     if(empty && empty.length > 0) {
-        // console.log('getData data is empty ', request);
-        return output;
+        // console.log('getData data is empty ', empty);
+        // 경매장 연속 검색으로 인해 검색 이용이 최대 5분간 제한되었습니다.
+        // console.log('getData data is empty trace multi ', empty.text());
+        if(empty.text().indexOf('연속 검색') > 0) {
+            console.log('제한되었다..');
+        }        
+        return -1;
     }
     cheer('tbody tr').each((i, el) => {
         let name = ''
@@ -382,32 +358,45 @@ function parseAcc(responseData: any, accType: ACCTYPE) {
             name: (cheer(socket.children[1]).children('font')[0].children[0] as any).data,
             number: Number((cheer(socket.children[1]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
         };
+        socket1.name = socket1.name.slice(1, -1);
+
         let socket2 = {
             name: (cheer(socket.children[3]).children('font')[0].children[0] as any).data,
             number: Number((cheer(socket.children[3]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
         };
+        socket2.name = socket2.name.slice(1, -1);
+
         let badSocket1 = {
             name: (cheer(socket.children[5]).children('font')[0].children[0] as any).data,
             number: Number((cheer(socket.children[5]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
         };
+        badSocket1.name = badSocket1.name.slice(1, -1);
+
         let prop = cheer(el).find('div.effect ul')[1];
         let property1 = {
             name: (cheer(prop.children[1]).children('font')[0].children[0] as any).data,
             number: Number((cheer(prop.children[1]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
         };
+        property1.name = property1.name.slice(1, -1);
         let property2 = {name:'', number: 0};
         if(accType === ACCTYPE.NECK) {
             property2 = {
                 name: (cheer(prop.children[3]).children('font')[0].children[0] as any).data,
                 number: Number((cheer(prop.children[3]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
             };
+            property2.name = property2.name.slice(1, -1);
         }
+
         let price= 0;
         try{
             price = Number((cheer(el).find('div.price-buy em')[0].children[0] as any).data.match(/\d/g).join(''));
         } catch(e ) {
             // console.log('error debug :: price, 무시!', cheer(el).find('div.price-buy em')[0]);
             // price 가져오는 데 문제가 있다면 이 녀석은 무시한다.
+            return;
+        }
+        if(price < 0) {
+            // 0보다 작아도 skip
             return;
         }
         let raw: AccData = {
@@ -447,14 +436,20 @@ async function getAccWidthProperty(
             property2: -1,
         }
         // console.log('파라미터', JSON.stringify(param));
+        let sleep = (ms: number) => {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        // await sleep(3000);
         if(grade === 4) {
             // 전설 데이터 가져오기
             searchPromise = getDataLegend(param).then((res : any) => {
+                console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 치특신 ${k}! ${res.length}`);
                 return res;
             });
         } else if(grade === 5) {
             // 유물 데이터 가져오기
             searchPromise = getData(param).then((res : any) => {
+                console.log(`유물 ${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 치특신 ${k}! ${res.length}`);
                 return res;
             });
         }
@@ -475,3 +470,113 @@ async function getAccWidthProperty(
     });
 }
 
+/**
+ * * acc 타입 하나만 데이터 가져오기
+ * 
+ * * ex) 원한, 기습 타입의 악세를
+ * * 목걸이, 귀걸이, 반지 별로
+ * * 치, 특, 신 별로 가져온다.
+ * @param grade 등급
+ * @param socketList 소켓 두개
+ */
+export async function getOneAccType(grade: number, socketList: Socket[]) {
+    let neckItemList: ItemListByType[] = [];
+    let earringItemList: ItemListByType[] = [];
+    let ringItemList: ItemListByType[] = [];
+
+    let promiseAll: any[] = [];
+
+    let valueComposition: any[] = grade === 4 ? 
+    [
+        [1, 3],
+        [2, 2],
+        [2, 3],
+        [3, 1],
+        [3, 2],
+        [3, 3],
+    ] 
+    :
+    [
+        [3, 4],
+        [3, 5],
+        [4, 3],
+        [5, 3],
+    ]
+    for(let valcomp of valueComposition) {
+        let socket1: Socket = {
+            id : socketList[0].id,
+            name: socketList[0].name,
+            class: socketList[0].class,
+            number: socketList[0].number,
+        };
+        let socket2: Socket = {
+            id : socketList[1].id,
+            name: socketList[1].name,
+            class: socketList[1].class,
+            number: socketList[1].number,
+        };
+        // 찾으려는 악세 각인 수치 넣기
+        socket1.number = valcomp[0];
+        socket2.number = valcomp[1];
+
+        for(let accType of [ACCTYPE.NECK, ACCTYPE.EARRING, ACCTYPE.RING]){
+            // 목걸이, 귀걸이, 반지 각
+            // 치 특 신 3번
+            let accPromise = getAccWidthProperty(grade, accType, socket1, socket2)
+            .then((res: AccData[]) => {
+                // 데이터가 빈 것이거나 정상적으로 왔다.
+                let accOne: ItemListByType = {
+                    accType: accType,
+                    grade: grade,
+                    socket1: socket1,
+                    socket2: socket2,
+                    itemList: res,
+                }
+                // console.log('accOne', accOne);
+                // 아이템 사전에 넣는다.
+                if(accType === ACCTYPE.NECK){
+                    neckItemList.push(accOne);
+                } else if(accType === ACCTYPE.EARRING) {
+                    earringItemList.push(accOne);
+                } else if(accType === ACCTYPE.RING) {
+                    ringItemList.push(accOne);
+                }
+            })
+            .catch((err: any) => {
+                console.log('데이터를 가져오다가 ERROR!');
+                // 빈 데이터로 넣는다 ㅠㅠ
+                let accOne: ItemListByType = {
+                    accType: accType,
+                    grade: grade,
+                    socket1: socket1,
+                    socket2: socket2,
+                    itemList: [],
+                }
+                // 아이템 사전에 넣는다.
+                if(accType === ACCTYPE.NECK){
+                    neckItemList.push(accOne);
+                } else if(accType === ACCTYPE.EARRING) {
+                    earringItemList.push(accOne);
+                } else if(accType === ACCTYPE.RING) {
+                    ringItemList.push(accOne);
+                }
+            })
+            // console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number})  거래소에서 가져올 거임! promise 받음`);
+            promiseAll.push(accPromise);
+        }                    
+    };
+    return Promise.all(promiseAll)
+    .then((res: any[]) => {
+        console.log('데이터를 드디어 모두 긁어왔다..', res.length)
+        let dictionary = {
+            neckItemList: neckItemList,
+            earringItemList: earringItemList,
+            ringItemList: ringItemList,
+        }
+        // console.log('아이템 사전', dictionary);
+        return dictionary;
+    }).catch((res: any) => {
+        console.log('데이터를 긁어오다가 잘못되었고, 응답을 보냅니다!')
+        return res;
+    })
+}

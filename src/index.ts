@@ -1,4 +1,5 @@
 import { APIGatewayProxyHandler, APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+
 import { getData, getAllAcc } from './getDataFromTrader';
 import SocketList, { Socket } from "./SocketList";
 import { getDesposition, getDespComposition } from './calculateComposition';
@@ -14,7 +15,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     console.log("request: " + event.body);
     if (event.body) {
         let body = JSON.parse(event.body);
-
         const accCount = 5;
         let needNumber: number[] = body.needNumber;
         let socketList: Socket[] = body.socketList;
@@ -32,78 +32,78 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             despResult.push(result);
         })
         let deComp = getDespComposition(despResult, sumSocket, grade, accCount);
-
         let itemDictionary = await getAllAcc(grade, socketList);
-        // console.log(itemDictionary);
-        // const response = {
-        //     statusCode: 500,
-        //     body: itemDictionary,
-        // };
+        console.log(itemDictionary);
+        const response = {
+            statusCode: 200,
+            body: JSON.stringify(itemDictionary),
+        };
 
-        // return response;
+        return response;
 
         // let itemDictionary : ItemDictionary = ItemDictionaryData;
-        
-        let casesResult: any[] = [];
-        deComp.forEach(val => {
-            casesResult.push(getAllCases(itemDictionary, socketList, val, grade, accCount, 2));
-        })
-        return Promise.all(casesResult)
-        .then((res : any[]) => {
+        // let casesResult: any[] = [];
+        // deComp.forEach(val => {
+        //     casesResult.push(getAllCases(itemDictionary, socketList, val, grade, accCount, 2));
+        // })
+        // console.log(casesResult);
 
-            let finalResult: any[] = [];
-            let stop = false;
-            res.forEach((cases: any[], caseCount: number) => {
-                if (stop === true) {
-                    return;
-                }
-                cases.forEach((oneCase: any, oneCaseCount: number) => {
-                    if (stop === true) {
-                        return;
-                    }
-                    // console.log('accList', oneCase.accSocketList);
-                    // console.log('accList', oneCase.accList);
-                    let result = getFinalComposition(maxPrice, props, penalty, oneCase.accList);
-                    if (typeof (result) === 'number') {
-                        console.log('getFinalComposition stop', `${caseCount}-${oneCaseCount}`, result);
-                        stop = true;
-                    } else {
-                        // console.log('getFinalComposition', `${caseCount}-${oneCaseCount}`, result.length);
-                        finalResult.push(...result);
-                        if (finalResult.length > 3000) {
-                            stop = true;
-                        }
-                    }
-                })
-            })
+        // return Promise.all(casesResult)
+        // .then((res : any[]) => {
 
-            if(finalResult.length > 3000) {
-                const response : APIGatewayProxyResult = {
-                    statusCode: 200,
-                    body: JSON.stringify({count: -finalResult.length}),
-                };
-                return response;
-            }
-            else {
-                // 가격순으로 정렬
-                finalResult.sort((a: any, b:any) => {
-                    return a[1].price > b[1].price ? 1 : -1;
-                })
-                const response = {
-                    statusCode: 200,
-                    body: JSON.stringify(finalResult),
-                };
-                return response;
-            }
-        })
-        .catch((err: any) => {
-            const response = {
-                statusCode: 500,
-                body: JSON.stringify('error'),
-            };
+        //     let finalResult: any[] = [];
+        //     let stop = false;
+        //     res.forEach((cases: any[], caseCount: number) => {
+        //         if (stop === true) {
+        //             return;
+        //         }
+        //         cases.forEach((oneCase: any, oneCaseCount: number) => {
+        //             if (stop === true) {
+        //                 return;
+        //             }
+        //             // console.log('accList', oneCase.accSocketList);
+        //             // console.log('accList', oneCase.accList);
+        //             let result = getFinalComposition(maxPrice, props, penalty, oneCase.accList);
+        //             if (typeof (result) === 'number') {
+        //                 console.log('getFinalComposition stop', `${caseCount}-${oneCaseCount}`, result);
+        //                 stop = true;
+        //             } else {
+        //                 // console.log('getFinalComposition', `${caseCount}-${oneCaseCount}`, result.length);
+        //                 finalResult.push(...result);
+        //                 if (finalResult.length > 3000) {
+        //                     stop = true;
+        //                 }
+        //             }
+        //         })
+        //     })
+
+        //     if(finalResult.length > 3000) {
+        //         const response : APIGatewayProxyResult = {
+        //             statusCode: 200,
+        //             body: JSON.stringify({count: -finalResult.length}),
+        //         };
+        //         return response;
+        //     }
+        //     else {
+        //         // 가격순으로 정렬
+        //         finalResult.sort((a: any, b:any) => {
+        //             return a[1].price > b[1].price ? 1 : -1;
+        //         })
+        //         const response = {
+        //             statusCode: 200,
+        //             body: JSON.stringify(finalResult),
+        //         };
+        //         return response;
+        //     }
+        // })
+        // .catch((err: any) => {
+        //     const response = {
+        //         statusCode: 500,
+        //         body: JSON.stringify(err),
+        //     };
     
-            return response;
-        });
+        //     return response;
+        // });
     } else {
         const response = {
             statusCode: 200,

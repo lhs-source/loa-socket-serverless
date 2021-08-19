@@ -17,3 +17,9 @@ functions:
       - http:
           path: /yrdy
           method: post
+  crawlDataFromTrader:
+    handler: src/crawDataFromTraderIndex.handler
+    events:
+      - http:
+          path: /cdft
+          method: post
