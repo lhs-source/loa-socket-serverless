@@ -43,7 +43,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         })
         let deComp = getDespComposition(despResult, sumSocket, grade, accCount);
         
-        let itemDictionary = await getAllAcc(grade, socketList);
+        // let itemDictionary = await getAllAcc(grade, socketList);
         // console.log(itemDictionary);
         // const response = {
         //     statusCode: 200,
@@ -52,12 +52,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         // return response;
 
-        // let itemDictionary : ItemDictionary = ItemDictionaryData;
+        let itemDictionary : ItemDictionary = ItemDictionaryData;
         let casesResult: any[] = [];
         deComp.forEach(val => {
             casesResult.push(getAllCases(itemDictionary, socketList, val, grade, accCount, 2));
         })
-        console.log(casesResult);
+        // console.log(casesResult);
 
         return Promise.all(casesResult)
         .then((res : any[]) => {

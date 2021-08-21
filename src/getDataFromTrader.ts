@@ -280,7 +280,7 @@ async function requestToLambda(grade : number, socketList : Socket[]) {
         console.log('람다에서 데이터를 가져오지 못했습니다.', JSON.stringify(param));
         return res;
     }
-    console.log('람다에서 데이터를 가져왔습니다.', res.data);
+    // console.log('람다에서 데이터를 가져왔습니다.', res.data);
     return res.data;
 }
 
@@ -443,13 +443,13 @@ async function getAccWidthProperty(
         if(grade === 4) {
             // 전설 데이터 가져오기
             searchPromise = getDataLegend(param).then((res : any) => {
-                console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 치특신 ${k}! ${res.length}`);
+                // console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 치특신 ${k}! ${res.length}`);
                 return res;
             });
         } else if(grade === 5) {
             // 유물 데이터 가져오기
             searchPromise = getData(param).then((res : any) => {
-                console.log(`유물 ${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 치특신 ${k}! ${res.length}`);
+                // console.log(`유물 ${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 치특신 ${k}! ${res.length}`);
                 return res;
             });
         }
@@ -463,7 +463,7 @@ async function getAccWidthProperty(
             totalList.push(...current);
             return totalList;
         }, []);
-        console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 거래소에서 가져옴!  ${output.length}`);
+        // console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 거래소에서 가져옴!  ${output.length}`);
         return output;
     }).catch((err: any) => {
         return [];

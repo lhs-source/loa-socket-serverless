@@ -21,7 +21,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         const grade = body.grade;
 
         let itemDictionary = await getOneAccType(grade, socketList);
-        console.log(itemDictionary);
+        // console.log(itemDictionary);
         const response = {
             statusCode: 200,
             body: JSON.stringify(itemDictionary),

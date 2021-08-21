@@ -4,7 +4,7 @@ provider:
   name: aws
   runtime: nodejs12.x
   region: ap-northeast-2
-  apiName: loaSocketServerless
+  apiName: loaSocketServerlessDev
 
 plugins:
   - serverless-plugin-typescript
