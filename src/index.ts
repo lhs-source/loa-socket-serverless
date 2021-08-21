@@ -6,6 +6,7 @@ import { getDesposition, getDespComposition } from './calculateComposition';
 import { getAllCases, getFinalComposition } from "./finalComposition";
 import ItemDictionaryData from "./mockItemDictionaly";
 import { ACCTYPE, loopCount, RequestAcc, AccData, ItemListByType, ItemDictionary } from './Constants';
+import { logCount, logPrice, RequestCount, RequestPrice } from './LogRequester';
 
 /**
  * 핸들러
@@ -26,6 +27,15 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         let sumSocket = needNumber.reduce((sum: number, current: number) => { sum += current; return sum; }, 0);
         let ableNumber = grade === 4 ? [1, 2, 3] : [3, 4, 5];
 
+
+        // TODO 카운트 로그 저장하기
+        let countParam : RequestCount = {
+            socketList: socketList,
+            grade: grade,
+            needNumber: needNumber,
+        }
+        logCount(countParam);
+
         let despResult: any[] = [];
         needNumber.forEach((num, index) => {
             let result = getDesposition(num, accCount, ableNumber);
@@ -33,7 +43,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         })
         let deComp = getDespComposition(despResult, sumSocket, grade, accCount);
         
-        // let itemDictionary = await getAllAcc(grade, socketList);
+        let itemDictionary = await getAllAcc(grade, socketList);
         // console.log(itemDictionary);
         // const response = {
         //     statusCode: 200,
@@ -42,7 +52,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         // return response;
 
-        let itemDictionary : ItemDictionary = ItemDictionaryData;
+        // let itemDictionary : ItemDictionary = ItemDictionaryData;
         let casesResult: any[] = [];
         deComp.forEach(val => {
             casesResult.push(getAllCases(itemDictionary, socketList, val, grade, accCount, 2));
@@ -90,6 +100,43 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
                 finalResult.sort((a: any, b:any) => {
                     return a[1].price > b[1].price ? 1 : -1;
                 })
+
+                // TODO 가격 로그 저장하기
+                if(finalResult[0]) {
+                    // 조합 결과 로그 남기기
+                    let scheme: RequestPrice = {
+                        grade: grade,
+                        socketList: socketList,
+                        property: [],
+                        price: finalResult[0][1].price,
+                    }
+                    if(props['[치명]']){
+                        let prop: any = {
+                            id: 0,
+                            name: '치명',
+                            number: props['[치명]'],
+                        }
+                        scheme.property.push(prop);
+                    }
+                    if(props['[특화]']){
+                        let prop: any = {
+                            id: 1,
+                            name: '특화',
+                            number: props['[특화]'],
+                        }
+                        scheme.property.push(prop);
+                    }
+                    if(props['[신속]']){
+                        let prop: any = {
+                            id: 2,
+                            name: '신속',
+                            number: props['[신속]'],
+                        }
+                        scheme.property.push(prop);
+                    }
+                    logPrice(scheme);
+                }
+
                 const response = {
                     statusCode: 200,
                     body: JSON.stringify(finalResult),
