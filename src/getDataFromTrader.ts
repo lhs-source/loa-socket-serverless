@@ -4,6 +4,60 @@ import moment from 'moment';
 import SocketList, { Socket } from "./SocketList";
 import { ACCTYPE, loopCount, RequestAcc, AccData, ItemListByType } from './Constants';
 
+const userAgentList = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.157 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.71 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.83 Safari/537.1',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 5.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.104 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',	
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.190 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
+
+]
+
 
 export async function getData(request: RequestAcc) : Promise<AccData[]> {
     let param: any = {};
@@ -102,38 +156,44 @@ export async function getData(request: RequestAcc) : Promise<AccData[]> {
     param['pushKey'] = '';
     param['tooltipData'] = ''; 
 
+    let output: any[] = [];
     let promiseAll: any = [];
-    for(let i = 1; i < loopCount; ++i){
+    for await (let i of [1, 2]){
         param['request[pageNo]'] = i;
         let form = new URLSearchParams(param);
-        promiseAll.push(
-            axios.post(
-                'https://lostark.game.onstove.com/Auction/GetAuctionListV2',
-                form, 
-                // {
-                //     headers: {
-                //         // "X-Requested-With": "XMLHttpRequest"
-                //     }
-                // }
-            ).then(res => {
-                let data = res.data;
-                let output = parseAcc(data, request.acctype);
-                return output;
-            }).catch((error: any) => {
-                return [];
-            })
-        );
-    }
+        
+        // console.log('파라미터', JSON.stringify(param));
+        let sleep = (ms: number) => {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        console.log('슬립 고', moment().format('mm분 ss초 sss'));
+        await sleep(500 + Math.random() * 3000);
+        console.log('슬립 끝', moment().format('mm분 ss초 sss'));
 
-    return Promise.all(promiseAll)
-    .then((res: any[]) => {
-        return res.reduce((totalList: any[], current: any[]) => {
-            totalList.push(...current);
-            return totalList;
-        }, []);
-    }).catch((err: any) => {
-        return [];
-    });
+        let res = await axios.post(
+            'https://lostark.game.onstove.com/Auction/GetAuctionListV2',
+            form, 
+            { 
+                headers: {
+                    'User-Agent': userAgentList[Math.ceil(Math.random() * 40)]
+                }
+            }
+        )
+        // console.log(res);
+        let data = res.data;
+        output.push(parseAcc(data, request.acctype));
+                
+    }
+    return output;
+    // return Promise.all(promiseAll)
+    // .then((res: any[]) => {
+    //     return res.reduce((totalList: any[], current: any[]) => {
+    //         totalList.push(...current);
+    //         return totalList;
+    //     }, []);
+    // }).catch((err: any) => {
+    //     return [];
+    // });
 }
 
 export async function getDataLegend(request: RequestAcc) : Promise<AccData[]>  {
@@ -234,40 +294,44 @@ export async function getDataLegend(request: RequestAcc) : Promise<AccData[]>  {
     param['tooltipData'] = ''; 
 
     
+    let output: any[] = [];
     let promiseAll: any = [];
-    for(let i = 1; i < loopCount; ++i){
+    for await(let i of [1, 2]){
         param['request[pageNo]'] = i;
         let form = new URLSearchParams(param);
-        promiseAll.push(
-            axios.post(
-                'https://lostark.game.onstove.com/Auction/GetAuctionListV2',
-                form, 
-                // {
-                //     headers: {
-                //     }
-                // }
-            ).then(res => {
-                let data = res.data;
-                let output = parseAcc(data, request.acctype);
-                return output;
-            }).catch((error: any) => {
-                // console.log("DEBUG :: 거래소에서 데이터 가져오는 데 문제가 생겼다, 아니면 결과가 없음!", request, param);
-                // console.log("DEBUG :: 거래소에서 데이터 가져오는 데 문제가 생겼다, 아니면 결과가 없음!", i);
-                return [];
-            })
-        );
-    }
+        
+        // console.log('파라미터', JSON.stringify(param));
+        let sleep = (ms: number) => {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        console.log('슬립 고', moment().format('mm분 ss초 sss'));
+        await sleep(500 + Math.random() * 3000);
+        console.log('슬립 끝', moment().format('mm분 ss초 sss'));
 
-    return Promise.all(promiseAll)
-    .then((res: any[]) => {
-        return res.reduce((totalList: any[], current: any[]) => {
-            totalList.push(...current);
-            return totalList;
-        }, []);
-    })
-    .catch((err: any) => {
-        return [];
-    })
+        let res = await axios.post(
+            'https://lostark.game.onstove.com/Auction/GetAuctionListV2',
+            form, 
+            {
+                headers: {
+                    'User-Agent': userAgentList[Math.ceil(Math.random() * 40)]
+                }
+            }
+        )
+        // console.log(res);
+        let data = res.data;
+        output.push(...parseAcc(data, request.acctype));
+                
+    }
+    return output;
+    // return Promise.all(promiseAll)
+    // .then((res: any[]) => {
+    //     return res.reduce((totalList: any[], current: any[]) => {
+    //         totalList.push(...current);
+    //         return totalList;
+    //     }, []);
+    // }).catch((err: any) => {
+    //     return [];
+    // });
 }
 
 async function requestToLambda(grade : number, socketList : Socket[]) {
@@ -337,7 +401,7 @@ function parseAcc(responseData: any, accType: ACCTYPE) {
         if(empty.text().indexOf('연속 검색') > 0) {
             console.log('제한되었다..');
         }        
-        return -1;
+        return [];
     }
     cheer('tbody tr').each((i, el) => {
         let name = ''
@@ -426,7 +490,8 @@ async function getAccWidthProperty(
     ) : Promise<AccData[]> {
     // ? 0 - 치명, 1 - 특화, 2 - 신속
     let promiseAll: any[] = [];
-    for(let k = 0; k < 3; ++k) {
+    let output: AccData[] = [];
+    for await (let k of [0, 1, 2]){
         let searchPromise : any = {};
         let param : RequestAcc = {
             acctype: Number(accType),
@@ -435,39 +500,33 @@ async function getAccWidthProperty(
             property1: k,
             property2: -1,
         }
-        // console.log('파라미터', JSON.stringify(param));
-        let sleep = (ms: number) => {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
         // await sleep(3000);
         if(grade === 4) {
             // 전설 데이터 가져오기
-            searchPromise = getDataLegend(param).then((res : any) => {
-                console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 치특신 ${k}! ${res.length}`);
-                return res;
-            });
+           let res = await getDataLegend(param)
+            console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 치특신 ${k}! ${res.length}`);
+            output.push(...res);
         } else if(grade === 5) {
             // 유물 데이터 가져오기
-            searchPromise = getData(param).then((res : any) => {
-                console.log(`유물 ${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 치특신 ${k}! ${res.length}`);
-                return res;
-            });
+            let res = await getData(param)
+            console.log(`유물 ${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 치특신 ${k}! ${res.length}`);
+            output.push(...res);
         }
-        promiseAll.push(searchPromise);
     }
-    return Promise.all(promiseAll).then((res: any[]) => {
-        // 치특신 데이터를 모두 가져왔다.
-        // 3개 배열을 하나로 합쳐서 응답하자.
-        // [ [...치], [...특], [...신] ]
-        let output = res.reduce((totalList: any[], current: any[]) => {
-            totalList.push(...current);
-            return totalList;
-        }, []);
-        console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 거래소에서 가져옴!  ${output.length}`);
-        return output;
-    }).catch((err: any) => {
-        return [];
-    });
+    return output;
+    // return Promise.all(promiseAll).then((res: any[]) => {
+    //     // 치특신 데이터를 모두 가져왔다.
+    //     // 3개 배열을 하나로 합쳐서 응답하자.
+    //     // [ [...치], [...특], [...신] ]
+    //     let output = res.reduce((totalList: any[], current: any[]) => {
+    //         totalList.push(...current);
+    //         return totalList;
+    //     }, []);
+    //     console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number}) '${accType}' 거래소에서 가져옴!  ${output.length}`);
+    //     return output;
+    // }).catch((err: any) => {
+    //     return [];
+    // });
 }
 
 /**
@@ -519,64 +578,49 @@ export async function getOneAccType(grade: number, socketList: Socket[]) {
         socket1.number = valcomp[0];
         socket2.number = valcomp[1];
 
-        for(let accType of [ACCTYPE.NECK, ACCTYPE.EARRING, ACCTYPE.RING]){
+        for await(let accType of [ACCTYPE.NECK, ACCTYPE.EARRING, ACCTYPE.RING]){
             // 목걸이, 귀걸이, 반지 각
             // 치 특 신 3번
-            let accPromise = getAccWidthProperty(grade, accType, socket1, socket2)
-            .then((res: AccData[]) => {
-                // 데이터가 빈 것이거나 정상적으로 왔다.
-                let accOne: ItemListByType = {
-                    accType: accType,
-                    grade: grade,
-                    socket1: socket1,
-                    socket2: socket2,
-                    itemList: res,
-                }
-                // console.log('accOne', accOne);
-                // 아이템 사전에 넣는다.
-                if(accType === ACCTYPE.NECK){
-                    neckItemList.push(accOne);
-                } else if(accType === ACCTYPE.EARRING) {
-                    earringItemList.push(accOne);
-                } else if(accType === ACCTYPE.RING) {
-                    ringItemList.push(accOne);
-                }
-            })
-            .catch((err: any) => {
-                console.log('데이터를 가져오다가 ERROR!');
-                // 빈 데이터로 넣는다 ㅠㅠ
-                let accOne: ItemListByType = {
-                    accType: accType,
-                    grade: grade,
-                    socket1: socket1,
-                    socket2: socket2,
-                    itemList: [],
-                }
-                // 아이템 사전에 넣는다.
-                if(accType === ACCTYPE.NECK){
-                    neckItemList.push(accOne);
-                } else if(accType === ACCTYPE.EARRING) {
-                    earringItemList.push(accOne);
-                } else if(accType === ACCTYPE.RING) {
-                    ringItemList.push(accOne);
-                }
-            })
-            // console.log(`${socket1.name}(${socket1.number}) - ${socket2.name}(${socket2.number})  거래소에서 가져올 거임! promise 받음`);
-            promiseAll.push(accPromise);
+            let res = await getAccWidthProperty(grade, accType, socket1, socket2)
+            // 데이터가 빈 것이거나 정상적으로 왔다.
+            let accOne: ItemListByType = {
+                accType: accType,
+                grade: grade,
+                socket1: socket1,
+                socket2: socket2,
+                itemList: res,
+            }
+            // console.log('accOne', accOne);
+            // 아이템 사전에 넣는다.
+            if(accType === ACCTYPE.NECK){
+                neckItemList.push(accOne);
+            } else if(accType === ACCTYPE.EARRING) {
+                earringItemList.push(accOne);
+            } else if(accType === ACCTYPE.RING) {
+                ringItemList.push(accOne);
+            }
+            
         }                    
     };
-    return Promise.all(promiseAll)
-    .then((res: any[]) => {
-        console.log('데이터를 드디어 모두 긁어왔다..', res.length)
-        let dictionary = {
-            neckItemList: neckItemList,
-            earringItemList: earringItemList,
-            ringItemList: ringItemList,
-        }
-        // console.log('아이템 사전', dictionary);
-        return dictionary;
-    }).catch((res: any) => {
-        console.log('데이터를 긁어오다가 잘못되었고, 응답을 보냅니다!')
-        return res;
-    })
+    let dictionary = {
+        neckItemList: neckItemList,
+        earringItemList: earringItemList,
+        ringItemList: ringItemList,
+    }
+    // console.log('아이템 사전', dictionary);
+    return dictionary;
+    // return Promise.all(promiseAll)
+    // .then((res: any[]) => {
+    //     console.log('데이터를 드디어 모두 긁어왔다..', res.length)
+    //     let dictionary = {
+    //         neckItemList: neckItemList,
+    //         earringItemList: earringItemList,
+    //         ringItemList: ringItemList,
+    //     }
+    //     // console.log('아이템 사전', dictionary);
+    //     return dictionary;
+    // }).catch((res: any) => {
+    //     console.log('데이터를 긁어오다가 잘못되었고, 응답을 보냅니다!')
+    //     return res;
+    // })
 }
