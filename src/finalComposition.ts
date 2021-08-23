@@ -71,10 +71,10 @@ export function getAllCases(itemDictionary: ItemDictionary, socketList: any[], l
                 // console.log('last', index, '=>', items.join(' - '));
                 let itemList = findSocket(socketList, items);
                 let accList = getAcc2(itemDictionary, itemList, grade);
-                console.log('accList', JSON.stringify(itemList),
-                accList.map((accOne : any[]) => {
-                    return accOne.length;
-                }).join(', '));
+                // console.log('accList', JSON.stringify(itemList),
+                // accList.map((accOne : any[]) => {
+                //     return accOne.length;
+                // }).join(', '));
                 finalOutput.push({
                     accSocketList: itemList,
                     // accStr: items.map((item, index) => this.getAcc(index, item)),

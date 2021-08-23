@@ -344,7 +344,7 @@ async function requestToLambda(grade : number, socketList : Socket[]) {
         console.log('람다에서 데이터를 가져오지 못했습니다.', JSON.stringify(param));
         return res;
     }
-    console.log('람다에서 데이터를 가져왔습니다.', res.data);
+    // console.log('람다에서 데이터를 가져왔습니다.', res.data);
     return res.data;
 }
 
