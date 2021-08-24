@@ -71,7 +71,7 @@ export function getAllCases(itemDictionary: ItemDictionary, socketList: any[], l
                 // console.log('last', index, '=>', items.join(' - '));
                 let itemList = findSocket(socketList, items);
                 let accList = getAcc2(itemDictionary, itemList, grade);
-                // console.log('accList', JSON.stringify(itemList),
+                // console.log('accList', JSON.stringify(accList),
                 // accList.map((accOne : any[]) => {
                 //     return accOne.length;
                 // }).join(', '));
@@ -250,14 +250,16 @@ export function getFinalComposition(maxPrice: number, props: any, penalty: any, 
             }
             // 아이템 이름이 같으면 안된다 ㅠ
             if (makeList.length > 0 && makeList[makeList.length - 1].name === item.name) {
+                console.log('이름 같다..', makeList[makeList.length - 1].name, item.name)
                 return;
             }
 
-            // 악세 종류 하나의 list 중 아이템 하나임!
-            // 특성을 모두 합쳐서 sum 에 담기
             if (!item.price || item.price < 0) {
+                console.log('가격이 0이에용')
                 return;
             }
+            // 악세 종류 하나의 list 중 아이템 하나임!
+            // 특성을 모두 합쳐서 sum 에 담기
             let perSumData: SumDataModel = {
                 price: sumData.price + item.price,
                 sockets: { ...sumData.sockets },
@@ -266,6 +268,7 @@ export function getFinalComposition(maxPrice: number, props: any, penalty: any, 
                 propertySum: sumData.propertySum,
             }
             if (!perSumData.price || perSumData.price > maxPrice) {
+                console.log('가격이 오버')
                 return;
             }
             // 소켓
@@ -301,6 +304,7 @@ export function getFinalComposition(maxPrice: number, props: any, penalty: any, 
                 }
             }
             if (stop === true) {
+                console.log('패널티 안맞음')
                 return;
             }
 
@@ -321,14 +325,17 @@ export function getFinalComposition(maxPrice: number, props: any, penalty: any, 
 
             if (perSumData.property['신속']
                 && perSumData.property['신속'] > Number(props['신속']) + 100) {
+                    console.log('신속 오버')
                 return;
             }
             if (perSumData.property['치명']
                 && perSumData.property['치명'] > Number(props['치명']) + 100) {
+                    console.log('치명 오버')
                 return;
             }
             if (perSumData.property['특화']
                 && perSumData.property['특화'] > Number(props['특화']) + 100) {
+                    console.log('특화 오버')
                 return;
             }
 
@@ -347,6 +354,7 @@ export function getFinalComposition(maxPrice: number, props: any, penalty: any, 
             if (depth + 1 >= 5) {
                 // console.log(newMakeList, perSumData);
                 if (perSumData.price > maxPrice) {
+                    console.log('최종 가격 오버')
                     // 가격이 넘으면 안되고
                     return;
                 }
@@ -361,14 +369,17 @@ export function getFinalComposition(maxPrice: number, props: any, penalty: any, 
                 // 개별 특성 합이 너무 부족해도 탈락 
                 if (perSumData.property['신속']
                     && perSumData.property['신속'] < Number(props['신속'])) {
+                        console.log('최종 신속 부족')
                     return;
                 }
                 if (perSumData.property['치명']
                     && perSumData.property['치명'] < Number(props['치명'])) {
+                        console.log('최종 치명 부족')
                     return;
                 }
                 if (perSumData.property['특화']
                     && perSumData.property['특화'] < Number(props['특화'])) {
+                        console.log('최종 특화 오버')
                     return;
                 }
                 perSumData.propertySum = ((perSumData.property['특화'] ? perSumData.property['특화'] : 0)

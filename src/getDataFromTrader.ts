@@ -55,7 +55,21 @@ const userAgentList = [
     'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
-
+    'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
+    'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko',
+    'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko',
+    'Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko',
+    'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; rv:11.0) like Gecko',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36 OPR/56.0.3051.52',
+    'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.75 Safari/537.36 OPR/36.0.2130.32',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36 OPR/66.0.3515.72',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36 OPR/65.0.3467.78',
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1 Mobile/15E148 Safari/604.1',
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Mobile/15E148 Safari/604.1',
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 13_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Mobile/15E148 Safari/604.1',
+    'Mozilla/5.0 (Linux; Android 9; SM-G960F Build/PPR1.180610.011; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.157 Mobile Safari/537.36',
+    'Dalvik/2.1.0 (Linux; U; Android 5.1.1; Navori QL Stix 3500 Build/LMY49F)',
+    'Mozilla/5.0 (Linux; Android 9; SM-G950F Build/PPR1.180610.011; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.157 Mobile Safari/537.36',
 ]
 
 
@@ -162,26 +176,27 @@ export async function getData(request: RequestAcc) : Promise<AccData[]> {
         param['request[pageNo]'] = i;
         let form = new URLSearchParams(param);
         
+        // console.log(param);
         // console.log('파라미터', JSON.stringify(param));
         let sleep = (ms: number) => {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
-        console.log('슬립 고', moment().format('mm분 ss초 sss'));
-        await sleep(500 + Math.random() * 3000);
-        console.log('슬립 끝', moment().format('mm분 ss초 sss'));
+        console.log('슬립 고', moment().format('mm분 ss초 zzz'));
+        await sleep(0 + Math.random() * 1500);
+        console.log('슬립 끝', moment().format('mm분 ss초 zzz'));
 
         let res = await axios.post(
             'https://lostark.game.onstove.com/Auction/GetAuctionListV2',
             form, 
             { 
                 headers: {
-                    'User-Agent': userAgentList[Math.ceil(Math.random() * 40)]
+                    'User-Agent': userAgentList[Math.ceil(Math.random() * 60)]
                 }
             }
         )
-        // console.log(res);
+        console.log('응답쓰', moment().format('mm분 ss초 zzz'));
         let data = res.data;
-        output.push(parseAcc(data, request.acctype));
+        output.push(...parseAcc(data, request.acctype));
                 
     }
     return output;
@@ -300,24 +315,25 @@ export async function getDataLegend(request: RequestAcc) : Promise<AccData[]>  {
         param['request[pageNo]'] = i;
         let form = new URLSearchParams(param);
         
+        // console.log(param);
         // console.log('파라미터', JSON.stringify(param));
         let sleep = (ms: number) => {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
-        console.log('슬립 고', moment().format('mm분 ss초 sss'));
-        await sleep(500 + Math.random() * 3000);
-        console.log('슬립 끝', moment().format('mm분 ss초 sss'));
+        console.log('슬립 고', moment().format('mm분 ss초 zzz'));
+        await sleep(0 + Math.random() * 1500);
+        console.log('슬립 끝', moment().format('mm분 ss초 zzz'));
 
         let res = await axios.post(
             'https://lostark.game.onstove.com/Auction/GetAuctionListV2',
             form, 
             {
                 headers: {
-                    'User-Agent': userAgentList[Math.ceil(Math.random() * 40)]
+                    'User-Agent': userAgentList[Math.ceil(Math.random() * 60)]
                 }
             }
         )
-        // console.log(res);
+        console.log('응답쓰', moment().format('mm분 ss초 zzz'));
         let data = res.data;
         output.push(...parseAcc(data, request.acctype));
                 
@@ -381,7 +397,7 @@ export async function getAllAcc(grade: number, socket: Socket[],) {
             earringItemList: earringItemList,
             ringItemList: ringItemList,
         }
-        // console.log('아이템 사전', dictionary);
+        console.log('아이템 사전', JSON.stringify(dictionary));
         return dictionary;
     }).catch((res: any) => {
         console.log('람다에서 데이터를 긁어오다가 잘못되었고, 응답을 보냅니다!')
@@ -403,86 +419,91 @@ function parseAcc(responseData: any, accType: ACCTYPE) {
         }        
         return [];
     }
-    cheer('tbody tr').each((i, el) => {
-        let name = ''
-        try {
-            name = (cheer(el).find('span.name')[0].children[0] as any).data;
-        } catch (e ) {
-            // console.log('error debug :: name', cheer(el).find('span.name')[0]);
-        }
-        let count = '';
-        try{
-            count = (cheer(el).find('span.count font')[0].children[0] as any).data.match(/\d/g).join('');
-        }catch(e ) {
-            // console.log('error debug :: count', cheer(el).find('span.count font')[0]);
-        }
-        let grade = Number(cheer(el).find('div.grade')[0].attribs['data-grade']);
-        let socket = cheer(el).find('div.effect ul')[0];
-        let socket1 = {
-            name: (cheer(socket.children[1]).children('font')[0].children[0] as any).data,
-            number: Number((cheer(socket.children[1]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
-        };
-        socket1.name = socket1.name.slice(1, -1);
-
-        let socket2 = {
-            name: (cheer(socket.children[3]).children('font')[0].children[0] as any).data,
-            number: Number((cheer(socket.children[3]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
-        };
-        socket2.name = socket2.name.slice(1, -1);
-
-        let badSocket1 = {
-            name: (cheer(socket.children[5]).children('font')[0].children[0] as any).data,
-            number: Number((cheer(socket.children[5]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
-        };
-        badSocket1.name = badSocket1.name.slice(1, -1);
-
-        let prop = cheer(el).find('div.effect ul')[1];
-        let property1 = {
-            name: (cheer(prop.children[1]).children('font')[0].children[0] as any).data,
-            number: Number((cheer(prop.children[1]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
-        };
-        property1.name = property1.name.slice(1, -1);
-        let property2 = {name:'', number: 0};
-        if(accType === ACCTYPE.NECK) {
-            property2 = {
-                name: (cheer(prop.children[3]).children('font')[0].children[0] as any).data,
-                number: Number((cheer(prop.children[3]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
+    try{
+        cheer('tbody tr').each((i, el) => {
+            let name = ''
+            try {
+                name = (cheer(el).find('span.name')[0].children[0] as any).data;
+            } catch (e ) {
+                // console.log('error debug :: name', cheer(el).find('span.name')[0]);
+            }
+            let count = '';
+            try{
+                count = (cheer(el).find('span.count font')[0].children[0] as any).data.match(/\d/g).join('');
+            }catch(e ) {
+                // console.log('error debug :: count', cheer(el).find('span.count font')[0]);
+            }
+            let grade = Number(cheer(el).find('div.grade')[0].attribs['data-grade']);
+            let socket = cheer(el).find('div.effect ul')[0];
+            let socket1 = {
+                name: (cheer(socket.children[1]).children('font')[0].children[0] as any).data,
+                number: Number((cheer(socket.children[1]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
             };
-            property2.name = property2.name.slice(1, -1);
-        }
-
-        let price= 0;
-        try{
-            price = Number((cheer(el).find('div.price-buy em')[0].children[0] as any).data.match(/\d/g).join(''));
-        } catch(e ) {
-            // console.log('error debug :: price, 무시!', cheer(el).find('div.price-buy em')[0]);
-            // price 가져오는 데 문제가 있다면 이 녀석은 무시한다.
-            return;
-        }
-        if(price < 0) {
-            // 0보다 작아도 skip
-            return;
-        }
-        let raw: AccData = {
-            name: name,
-            count: count,
-            grade: grade,
-            acctype: accType,
-            socket1: socket1,
-            socket2: socket2,
-            badSocket1: badSocket1,
-            property1: property1,
-            property2: property2,
-            price: price,
-            timestamp: new Date(),
-        }
-        // console.log(raw);
-        output.push(raw);
-    })
+            socket1.name = socket1.name.slice(1, -1);
+    
+            let socket2 = {
+                name: (cheer(socket.children[3]).children('font')[0].children[0] as any).data,
+                number: Number((cheer(socket.children[3]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
+            };
+            socket2.name = socket2.name.slice(1, -1);
+    
+            let badSocket1 = {
+                name: (cheer(socket.children[5]).children('font')[0].children[0] as any).data,
+                number: Number((cheer(socket.children[5]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
+            };
+            badSocket1.name = badSocket1.name.slice(1, -1);
+    
+            let prop = cheer(el).find('div.effect ul')[1];
+            let property1 = {
+                name: (cheer(prop.children[1]).children('font')[0].children[0] as any).data,
+                number: Number((cheer(prop.children[1]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
+            };
+            property1.name = property1.name.slice(1, -1);
+            let property2 = {name:'', number: 0};
+            if(accType === ACCTYPE.NECK) {
+                property2 = {
+                    name: (cheer(prop.children[3]).children('font')[0].children[0] as any).data,
+                    number: Number((cheer(prop.children[3]).children('font')[1].children[0] as any).data.match(/\d/g).join('')),
+                };
+                property2.name = property2.name.slice(1, -1);
+            }
+    
+            let price= 0;
+            try{
+                price = Number((cheer(el).find('div.price-buy em')[0].children[0] as any).data.match(/\d/g).join(''));
+            } catch(e ) {
+                // console.log('error debug :: price, 무시!', cheer(el).find('div.price-buy em')[0]);
+                // price 가져오는 데 문제가 있다면 이 녀석은 무시한다.
+                return;
+            }
+            if(price < 0) {
+                // 0보다 작아도 skip
+                return;
+            }
+            let raw: AccData = {
+                name: name,
+                count: count,
+                grade: grade,
+                acctype: accType,
+                socket1: socket1,
+                socket2: socket2,
+                badSocket1: badSocket1,
+                property1: property1,
+                property2: property2,
+                price: price,
+                timestamp: new Date(),
+            }
+            // console.log(raw);
+            output.push(raw);
+        })
+    }
+    catch(e) {
+        console.log(cheer('tbody').children('tr.empty').text());
+    }
     return output;
 }
 
-async function getAccWidthProperty(
+export async function getAccWidthProperty(
     grade: Number,
     accType: ACCTYPE, 
     socket1: Socket, 
@@ -561,7 +582,7 @@ export async function getOneAccType(grade: number, socketList: Socket[]) {
         [4, 3],
         [5, 3],
     ]
-    for(let valcomp of valueComposition) {
+    for (let valcomp of valueComposition) {
         let socket1: Socket = {
             id : socketList[0].id,
             name: socketList[0].name,
@@ -577,50 +598,47 @@ export async function getOneAccType(grade: number, socketList: Socket[]) {
         // 찾으려는 악세 각인 수치 넣기
         socket1.number = valcomp[0];
         socket2.number = valcomp[1];
-
-        for await(let accType of [ACCTYPE.NECK, ACCTYPE.EARRING, ACCTYPE.RING]){
-            // 목걸이, 귀걸이, 반지 각
-            // 치 특 신 3번
-            let res = await getAccWidthProperty(grade, accType, socket1, socket2)
-            // 데이터가 빈 것이거나 정상적으로 왔다.
-            let accOne: ItemListByType = {
-                accType: accType,
-                grade: grade,
-                socket1: socket1,
-                socket2: socket2,
-                itemList: res,
-            }
-            // console.log('accOne', accOne);
-            // 아이템 사전에 넣는다.
-            if(accType === ACCTYPE.NECK){
-                neckItemList.push(accOne);
-            } else if(accType === ACCTYPE.EARRING) {
-                earringItemList.push(accOne);
-            } else if(accType === ACCTYPE.RING) {
-                ringItemList.push(accOne);
-            }
-            
-        }                    
+        let param = {
+            grade: grade,
+            socketList: socketList,
+            valcomp: valcomp,
+        }
+        promiseAll.push(axios.post('https://rcn8wut8le.execute-api.ap-northeast-2.amazonaws.com/dev/gt', param)
+        .then((res: any) => {
+            console.log('게터에서 가져옴', res.data);
+            neckItemList.push(...res.data.neckItemList);
+            earringItemList.push(...res.data.earringItemList);
+            ringItemList.push(...res.data.ringItemList);
+        })
+        .catch((err: any) => {
+            console.log('게터에서 잘못됨');
+        }));
     };
-    let dictionary = {
-        neckItemList: neckItemList,
-        earringItemList: earringItemList,
-        ringItemList: ringItemList,
-    }
+    // let dictionary = {
+    //     neckItemList: neckItemList,
+    //     earringItemList: earringItemList,
+    //     ringItemList: ringItemList,
+    // }
     // console.log('아이템 사전', dictionary);
-    return dictionary;
-    // return Promise.all(promiseAll)
-    // .then((res: any[]) => {
-    //     console.log('데이터를 드디어 모두 긁어왔다..', res.length)
-    //     let dictionary = {
-    //         neckItemList: neckItemList,
-    //         earringItemList: earringItemList,
-    //         ringItemList: ringItemList,
-    //     }
-    //     // console.log('아이템 사전', dictionary);
-    //     return dictionary;
-    // }).catch((res: any) => {
-    //     console.log('데이터를 긁어오다가 잘못되었고, 응답을 보냅니다!')
-    //     return res;
-    // })
+    // return dictionary;
+    return Promise.all(promiseAll)
+    .then((res: any[]) => {
+        console.log('데이터를 드디어 모두 긁어왔다..', res.length)
+        let dictionary = {
+            neckItemList: neckItemList,
+            earringItemList: earringItemList,
+            ringItemList: ringItemList,
+        }
+        // console.log('아이템 사전', dictionary);
+        return dictionary;
+    }).catch((res: any) => {
+        console.log('데이터를 긁어오다가 잘못되었고, 응답을 보냅니다!')
+        let dictionary = {
+            neckItemList: neckItemList,
+            earringItemList: earringItemList,
+            ringItemList: ringItemList,
+        }
+        // console.log('아이템 사전', dictionary);
+        return dictionary;
+    })
 }

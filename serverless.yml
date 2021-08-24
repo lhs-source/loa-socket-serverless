@@ -23,3 +23,9 @@ functions:
       - http:
           path: /cdft
           method: post
+  getterTrader:
+    handler: src/getterTraderIndex.handler
+    events:
+      - http:
+          path: /gt
+          method: post

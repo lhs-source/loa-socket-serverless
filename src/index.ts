@@ -17,8 +17,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     if (event.body) {
         let body = JSON.parse(event.body);
         const accCount = 5;
-        let needNumber: number[] = body.needNumber;
         let socketList: Socket[] = body.socketList;
+        let needNumber: number[] = body.needNumber.slice(0, socketList.length);
         const grade = body.grade;
         let maxPrice = body.maxPrice;
         let props = body.props;
@@ -29,19 +29,21 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
 
         // TODO 카운트 로그 저장하기
-        let countParam : RequestCount = {
-            socketList: socketList,
-            grade: grade,
-            needNumber: needNumber,
-        }
-        logCount(countParam);
+        // let countParam : RequestCount = {
+        //     socketList: socketList,
+        //     grade: grade,
+        //     needNumber: needNumber,
+        // }
+        // logCount(countParam);
 
         let despResult: any[] = [];
         needNumber.forEach((num, index) => {
             let result = getDesposition(num, accCount, ableNumber);
             despResult.push(result);
         })
+        console.log(despResult);
         let deComp = getDespComposition(despResult, sumSocket, grade, accCount);
+        console.log(deComp);
         
         // let itemDictionary = await getAllAcc(grade, socketList);
         // console.log(itemDictionary);
@@ -57,7 +59,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         deComp.forEach(val => {
             casesResult.push(getAllCases(itemDictionary, socketList, val, grade, accCount, 2));
         })
-        // console.log(casesResult);
 
         return Promise.all(casesResult)
         .then((res : any[]) => {
@@ -101,41 +102,41 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
                     return a[1].price > b[1].price ? 1 : -1;
                 })
 
-                // TODO 가격 로그 저장하기
-                if(finalResult[0]) {
-                    // 조합 결과 로그 남기기
-                    let scheme: RequestPrice = {
-                        grade: grade,
-                        socketList: socketList,
-                        property: [],
-                        price: finalResult[0][1].price,
-                    }
-                    if(props['[치명]']){
-                        let prop: any = {
-                            id: 0,
-                            name: '치명',
-                            number: props['[치명]'],
-                        }
-                        scheme.property.push(prop);
-                    }
-                    if(props['[특화]']){
-                        let prop: any = {
-                            id: 1,
-                            name: '특화',
-                            number: props['[특화]'],
-                        }
-                        scheme.property.push(prop);
-                    }
-                    if(props['[신속]']){
-                        let prop: any = {
-                            id: 2,
-                            name: '신속',
-                            number: props['[신속]'],
-                        }
-                        scheme.property.push(prop);
-                    }
-                    logPrice(scheme);
-                }
+                // // TODO 가격 로그 저장하기
+                // if(finalResult[0]) {
+                //     // 조합 결과 로그 남기기
+                //     let scheme: RequestPrice = {
+                //         grade: grade,
+                //         socketList: socketList,
+                //         property: [],
+                //         price: finalResult[0][1].price,
+                //     }
+                //     if(props['[치명]']){
+                //         let prop: any = {
+                //             id: 0,
+                //             name: '치명',
+                //             number: props['[치명]'],
+                //         }
+                //         scheme.property.push(prop);
+                //     }
+                //     if(props['[특화]']){
+                //         let prop: any = {
+                //             id: 1,
+                //             name: '특화',
+                //             number: props['[특화]'],
+                //         }
+                //         scheme.property.push(prop);
+                //     }
+                //     if(props['[신속]']){
+                //         let prop: any = {
+                //             id: 2,
+                //             name: '신속',
+                //             number: props['[신속]'],
+                //         }
+                //         scheme.property.push(prop);
+                //     }
+                //     logPrice(scheme);
+                // }
 
                 const response = {
                     statusCode: 200,
